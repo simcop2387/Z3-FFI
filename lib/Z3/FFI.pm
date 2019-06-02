@@ -11,6 +11,9 @@ use File::ShareDir qw/dist_dir/;
 use Path::Tiny;
 
 use constant {
+  # Z3_bool
+  Z3_TRUE => 1,
+  Z3_FALSE => 0,
   # Z3_lbool
   Z3_L_FALSE => -1,
   Z3_L_UNDEF => 0,
@@ -143,18 +146,22 @@ use constant {
   Z3_OP_FPA_BV2RM => 2352, Z3_OP_INTERNAL => 2353, Z3_OP_UNINTERPRETED => 2354
 };
 
-my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
-my $ffi_lib = FFI::CheckLib::find_lib_or_die(lib => 'z3', libpath => $search_path);
-my $ffi = FFI::Platypus->new();
-$ffi->lib($ffi_lib);
-
 my $opaque_types = [map {"Z3_$_"} qw/config context symbol ast sort func_decl app pattern constructor constructor_list params param_descrs model func_interp func_entry fixedpoint optimize ast_vector ast_map goal tactic probe apply_result solver stats/];
 
 my $functions = [
   [[Z3_get_full_version => 'get_full_version'] => [] => 'string'],
 ];
 
+my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
+my $ffi_lib = FFI::CheckLib::find_lib_or_die(lib => 'z3', libpath => $search_path);
+my $ffi = FFI::Platypus->new();
+$ffi->lib($ffi_lib);
+
 my $real_types = {
+  Z3_bool => 'char', # TODO this might actually change on some platforms 
+  Z3_string => 'string',
+  Z3_string_ptr => 'opaque', # TODO this likely needs some string code, it's likely only used for out parameters by Z3
+  # Z3_error_handler => # TODO ...
 };
 
 for my $type (@$opaque_types) {
@@ -170,7 +177,8 @@ for my $type (@$opaque_types) {
 }
 
 for my $type_name (keys %$real_types) {
-
+  my $real_type = $real_types->{$type_name};
+  $ffi->type($real_type => $type_name);
 }
 
 for my $function (@$functions) {
