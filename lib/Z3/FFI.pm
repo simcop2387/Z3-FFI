@@ -149,7 +149,28 @@ use constant {
 my $opaque_types = [map {"Z3_$_"} qw/config context symbol ast sort func_decl app pattern constructor constructor_list params param_descrs model func_interp func_entry fixedpoint optimize ast_vector ast_map goal tactic probe apply_result solver stats/];
 
 my $functions = [
-  [[Z3_get_full_version => 'get_full_version'] => [] => 'string'],
+  [get_full_version => [] => 'string'],
+  # Global Parameters
+  [global_param_set => ['Z3_string', 'Z3_string'] => 'void'],
+  [global_param_reset_all => [] => 'void'],
+  # [global_param_get => ['Z3_string', 'Z3_string_ptr'] => 'Z3_bool'],
+  # Create config
+  [mk_config => [] => 'Z3_config'],
+  [del_config => ['Z3_config'] => 'void'],
+  [set_param_value => ['Z3_config', 'Z3_string', 'Z3_string'] => 'void'],
+  # Context and AST Ref counting
+  [mk_context => ['Z3_config'] => 'Z3_context'],
+  [mk_context_rc => ['Z3_config'] => 'Z3_context'],
+  [del_context => ['Z3_config'] => 'void'],
+  [inc_ref => ['Z3_context', 'Z3_ast'] => 'void'],
+  [dec_ref => ['Z3_context', 'Z3_ast'] => 'void'],
+  [update_param_value => ['Z3_context', 'Z3_string', 'Z3_string'] => 'void'],
+  [interrupt => ['Z3_context'] => 'void'],
+  # Parameters
+  [mk_params => ['Z3_context'] => 'Z3_params'],
+  [params_inc_ref => ['Z3_context', 'Z3_params'] => 'void'],
+  [params_dec_ref => ['Z3_context', 'Z3_params'] => 'void'],
+  [params_set_bool => ['Z3_context', 'Z3_params', 'Z3_symbol', 'Z3_bool'] => 'void'],
 ];
 
 my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
@@ -182,7 +203,8 @@ for my $type_name (keys %$real_types) {
 }
 
 for my $function (@$functions) {
-  $ffi->attach(@$function);
+  my $name = shift @$function;
+  $ffi->attach(["Z3_$name" => $name], @$function);
 }
 
 print get_full_version();
