@@ -21,11 +21,11 @@ version 0.001
 
 =head1 INSTALL
 
-    cpan Alien::Z3
+    cpanm Alien::Z3
 
 =head1 DESCRIPTION
 
-This Alien module wraps the Z3 C library.
+This Alien module wraps the Z3 C library. This release supports version 4.8.4 of the Z3 library
 
 =cut
 
