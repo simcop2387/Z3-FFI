@@ -193,9 +193,9 @@ my $functions = [
   [qe_lite  => ["Z3_context", "Z3_ast_vector", "Z3_ast"] => "Z3_ast"],
   [polynomial_subresultants => ["Z3_context", "Z3_ast", "Z3_ast", "Z3_ast"] => "Z3_ast_vector"],
   [global_param_set => ["Z3_string", "Z3_string"] => "void"],
-  [global_param_reset_all => ["void"] => "void"],
+  [global_param_reset_all => [] => "void"],
   [global_param_get => ["Z3_string", "Z3_string_ptr"] => "Z3_bool"],
-  [mk_config => ["void"] => "Z3_config"],
+  [mk_config => [] => "Z3_config"],
   [del_config => ["Z3_config"] => "void"],
   [set_param_value => ["Z3_config", "Z3_string", "Z3_string"] => "void"],
   [mk_context => ["Z3_config"] => "Z3_context"],
@@ -528,7 +528,7 @@ my $functions = [
   [func_entry_get_arg => ["Z3_context", "Z3_func_entry", "uint"] => "Z3_ast"],
   [open_log => ["Z3_string"] => "bool"],
   [append_log => ["Z3_string"] => "void"],
-  [close_log => ["void"] => "void"],
+  [close_log => [] => "void"],
   [toggle_warning_messages => ["bool"] => "void"],
   [set_ast_print_mode => ["Z3_context", "Z3_ast_print_mode"] => "void"],
   [ast_to_string => ["Z3_context", "Z3_ast"] => "Z3_string"],
@@ -545,11 +545,11 @@ my $functions = [
   [set_error => ["Z3_context", "Z3_error_code"] => "void"],
   [get_error_msg => ["Z3_context", "Z3_error_code"] => "Z3_string"],
 #  [get_version => ["uint *", "uint *", "uint *", "uint *"] => "void"],
-  [get_full_version => ["void"] => "Z3_string"],
+  [get_full_version => [] => "Z3_string"],
   [enable_trace => ["Z3_string"] => "void"],
   [disable_trace => ["Z3_string"] => "void"],
-  [reset_memory => ["void"] => "void"],
-  [finalize_memory => ["void"] => "void"],
+  [reset_memory => [] => "void"],
+  [finalize_memory => [] => "void"],
   [mk_goal => ["Z3_context", "bool", "bool", "bool"] => "Z3_goal"],
   [goal_inc_ref => ["Z3_context", "Z3_goal"] => "void"],
   [goal_dec_ref => ["Z3_context", "Z3_goal"] => "void"],
@@ -653,7 +653,7 @@ my $functions = [
   [stats_is_double => ["Z3_context", "Z3_stats", "uint"] => "bool"],
   [stats_get_uint_value => ["Z3_context", "Z3_stats", "uint"] => "uint"],
   [stats_get_double_value => ["Z3_context", "Z3_stats", "uint"] => "double"],
-  [get_estimated_alloc_size => ["void"] => "uint64_t"],
+  [get_estimated_alloc_size => [] => "uint64_t"],
   [mk_fpa_rounding_mode_sort => ["Z3_context"] => "Z3_sort"],
   [mk_fpa_round_nearest_ties_to_even => ["Z3_context"] => "Z3_ast"],
   [mk_fpa_rne => ["Z3_context"] => "Z3_ast"],
@@ -848,7 +848,7 @@ my $real_types = {
 };
 
 for my $type (@$opaque_types) {
-  print "Makeint type $type\n";
+#  print "Makeint type $type\n";
   $ffi->custom_type($type => {
     native_type => 'opaque',
     native_to_perl => sub {
@@ -867,7 +867,7 @@ for my $type_name (keys %$real_types) {
 
 for my $function (@$functions) {
   my $name = shift @$function;
-  print "Making Function $name\n";
+#  print "Making Function $name\n";
   $ffi->attach(["Z3_$name" => $name], @$function);
 }
 
