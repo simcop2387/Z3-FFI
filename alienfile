@@ -1,7 +1,8 @@
 use alienfile;
 use lib './inc';
+use Sys::Info;
 
-#system("ls"); 
+my $cpu_count = $ENV{ALIEN_Z3_CPUCOUNT} || Sys::Info->new()->device('CPU')->count || 1;
 
 share {
     plugin Download => (
@@ -16,7 +17,7 @@ share {
         [ '%{cmake}', -G => '%{cmake_generator}',
           '-DCMAKE_INSTALL_PREFIX:PATH=%{.install.prefix}', 'z3-z3-4.8.4/'],
  
-        '%{cmake} --build .',
+        '%{cmake} --build . -j '.$cpu_count,
         '%{cmake} --build . --target install'
     ];
  
