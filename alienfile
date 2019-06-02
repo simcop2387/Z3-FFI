@@ -14,10 +14,10 @@ share {
  
     build [
         [ '%{cmake}', -G => '%{cmake_generator}',
-          '-DCMAKE_INSTALL_PREFIX:PATH=%{.install.prefix}', '..'],
+          '-DCMAKE_INSTALL_PREFIX:PATH=%{.install.prefix}', 'z3-z3-4.8.4/'],
  
-        '%{cmake} --build ..',
-        '%{cmake} --build ., --target install'
+        '%{cmake} --build .',
+        '%{cmake} --build . --target install'
     ];
  
     plugin 'Gather::IsolateDynamic' => ();
