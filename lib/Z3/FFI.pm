@@ -831,7 +831,7 @@ my $ffi = FFI::Platypus->new();
 $ffi->lib($ffi_lib);
 
 my $real_types = {
-  Z3_bool => 'char', # TODO this might actually change on some platforms
+  Z3_bool => 'bool',
   Z3_lbool => 'int',
   Z3_parameter_kind => 'int',
   Z3_symbol_kind => 'int',
@@ -843,7 +843,7 @@ my $real_types = {
   Z3_error_code => 'int',
   Z3_goal_prec => 'int',
   Z3_string => 'string',
-  Z3_string_ptr => 'opaque', # TODO this likely needs some string code, it's likely only used for out parameters by Z3
+  Z3_string_ptr => 'string *',
   # Z3_error_handler => # TODO ...
 };
 
@@ -852,7 +852,7 @@ for my $type (@$opaque_types) {
   $ffi->custom_type($type => {
     native_type => 'opaque',
     native_to_perl => sub {
-      my $class = arguments_get_string(0);
+      my $class = arguments_get_pointer(0);
       print $class, "\n";
       bless \$_[0], $class;
     },
