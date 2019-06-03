@@ -3,7 +3,7 @@ package Z3::FFI;
 use strict;
 use warnings;
 
-our $VERSION="0.001";
+our $VERSION = '0.002';
 
 use Data::Dumper;
 use FFI::Platypus;
