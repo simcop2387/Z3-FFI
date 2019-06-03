@@ -1,4 +1,4 @@
 .build
 *.swp
 *.kate-swp
-Alien-Z3*
+Z3-FFI*
