@@ -865,15 +865,18 @@ for my $type (@$opaque_types) {
       return $$val
   }});
 
-  $ffi->custom_type($type."_arr" => {
-    native_type => 'opaque',
-    native_to_perl => sub {
-      ...
-    },
-    perl_to_native => sub {
-      ...
-    }
-  });
+  $ffi->load_custom_type("Z3::FFI::ArrayType" => $type."_arr", $type);
+
+
+#  $ffi->custom_type($type."_arr" => {
+#    native_type => 'opaque',
+#    native_to_perl => sub {
+#      ...
+#    },
+#    perl_to_native => sub {
+#      ...
+#    }
+#  });
   $ffi->custom_type($type."_ptr" => {
     native_type => 'opaque',
     native_to_perl => sub {

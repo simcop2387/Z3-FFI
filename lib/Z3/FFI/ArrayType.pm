@@ -50,13 +50,15 @@ sub ffi_custom_type_api_1 {
       carp "Array element $i is type ".ref($_[0][$i])." and not type $z3_class" unless ref($_[0][$i]) eq $z3_class;
     }
     
-    my $pointers = pack(('P' x $count)._numeric_type(), @{$_[0]}, 0);
+    my $pointers = pack((_numeric_type() x $count+1), (map {$$_} @{$_[0]}), 0);
     my $array_pointer = unpack(_numeric_type(), pack('P', $pointers));
+    # Save a reference to the pointer list, and the objects themselves so they don't get GC'd
     push @stack, [ \$_[0], \$pointers ];
     return $array_pointer;
   };
 
   $config->{native_to_perl} = sub {
+    ... # unimplemented, not needed.
   };
 
   return $config;
@@ -67,6 +69,6 @@ sub ffi_custom_type_api_1 {
 __END__
 =pod
 
-Internal class
+Internal class used to translate an array of opaque objects to a pointer list for Z3
 
 =cut
