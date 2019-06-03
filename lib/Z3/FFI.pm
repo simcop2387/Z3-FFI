@@ -1,7 +1,9 @@
 package Z3::FFI;
 
-use Moo;
+use strict;
 use warnings;
+
+our $VERSION="0.001";
 
 use Data::Dumper;
 use FFI::Platypus;
