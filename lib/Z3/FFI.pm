@@ -179,7 +179,7 @@ my $functions = [
   [fixedpoint_push => ["Z3_context", "Z3_fixedpoint"] => "void"],
   [fixedpoint_pop => ["Z3_context", "Z3_fixedpoint"] => "void"],
   [fixedpoint_init => ["Z3_context", "Z3_fixedpoint", "void*"] => "void"],
-  #[fixedpoint_set_reduce_assign_callback => ["Z3_context", "Z3_fixedpoint", "Z3_fixedpoint_reduce_assign_callback_fptr"] => "void"],
+  #[fixedpoint_set_reduce_assign_callback => ["Z3_context", "Z3_fixedpoint", "Z3_fixedpoint_reduce_assign_callback_fptr"] => "void"], # TODO figure out these functions?
   #[fixedpoint_set_reduce_app_callback => ["Z3_context", "Z3_fixedpoint", "Z3_fixedpoint_reduce_app_callback_fptr"] => "void"],
   #[fixedpoint_add_callback => ["Z3_context", "Z3_fixedpoint", "void *state", "Z3_fixedpoint_new_lemma_eh", "Z3_fixedpoint_predecessor_eh", "Z3_fixedpoint_unfold_eh"] => "void"],
   [fixedpoint_add_constraint  => ["Z3_context", "Z3_fixedpoint", "Z3_ast", "uint"] => "void"],
@@ -286,7 +286,13 @@ my $functions = [
     
     return $ret;
   }],
-  [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"], # TODO num_fields
+  [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor", sub {
+    my ($xsub, $ctx, $name, $recognizer, $num_fields, $field_names, $sorts, $sort_refs) = @_;
+    my $ct_field_names = scalar @$field_names;
+    die "Number of field_names ($ct_field_names) doesn't match \$num_fields ($num_fields)" unless $ct_field_names == $num_fields;
+
+    $xsub->($ctx, $name, $recognizer, $num_fields, $field_names, $sorts, $sort_refs);
+  }],
   [del_constructor => ["Z3_context", "Z3_constructor"] => "void"],
   [mk_datatype => ["Z3_context", "Z3_symbol", "uint", "Z3_constructor_arr"] => "Z3_sort"],
   [mk_constructor_list => ["Z3_context", "uint", "Z3_constructor_arr"] => "Z3_constructor_list"],
