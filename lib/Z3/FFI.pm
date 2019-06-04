@@ -585,7 +585,17 @@ my $functions = [
   [mk_model => ["Z3_context"] => "Z3_model"],
   [model_inc_ref => ["Z3_context", "Z3_model"] => "void"],
   [model_dec_ref => ["Z3_context", "Z3_model"] => "void"],
-  [model_eval => ["Z3_context", "Z3_model", "Z3_ast", "bool", "Z3_ast_ptr"] => "Z3_bool", sub {}], # TODO
+  [model_eval => ["Z3_context", "Z3_model", "Z3_ast", "bool", "Z3_ast_ptr"] => "Z3_bool", sub {
+    my ($xsub, $ctx, $model, $ast, $completion, $val) = @_;
+    die "\$val needs to be passed as a scalar reference to model_eval" unless ref($val) eq 'SCALAR';
+
+    my $ret = $xsub->($ctx, $model, $ast, $completion, $val);
+    my $pointer = $$val;
+    # rebless the inner object into the right type for later
+    $$val = bless \$pointer, "Z3::FFI::Types::Z3_ast";
+
+    return $ret;
+  }],
   [model_get_const_interp => ["Z3_context", "Z3_model", "Z3_func_decl"] => "Z3_ast"],
   [model_has_interp => ["Z3_context", "Z3_model", "Z3_func_decl"] => "bool"],
   [model_get_func_interp => ["Z3_context", "Z3_model", "Z3_func_decl"] => "Z3_func_interp"],
