@@ -1027,9 +1027,9 @@ This is built for Z3 version 4.8.4
 
 This is a direct translation of the Z3 C API to a Perl API.  It's most likely not the level for working with Z3 from perl.
 
-This is a mostly functional implementation right now.  A few functions are not implemented, Z3_set_error_handler in particular.
-This early release is also missing support for any Z3_...[] array types and the few pointer types that get used.  These will be implemented
-in future versions
+This is a mostly functional implementation right now.   Three functions related to fixed point math are unimplemented currently.
+
+It should work for any examples from the C API in Z3.
 
 =head1 USE
 
@@ -1042,15 +1042,25 @@ All functions have the Z3_ stripped from their name and are declared as part of 
     my $context = Z3::FFI::mk_context($config); # Create the Z3 Context object
     ... # work with the Z3 context
 
+This is a nearly complete and direct translation of the Z3 C API to Perl.  All the sames kinds of semantics of the C API regarding ownership and allocation will apply.
+You likely don't want to use this library directly, but instead wait for the higher level version wrapper of this API to get finished, which will roughly match the Python
+API that already exists.
+
+For some good examples of how to actually use this library, see the t/ directory in the distrobution.
+
 =head1 TODO
 
 =over 1
 
-=item Finish the array types to allow more functions to be called.
+=item More testing, from the C API example files
 
-=item Finish the pointer types to allow the rest of the functions to be called.
+=back
 
-=item Figure out if there's a way to handle the Z3_set_error_handler function
+=head1 EXPECTED ISSUES
+
+=over 1
+
+=item Memory leaks.  Due to the differing levels of the APIs and languages, I strongly suspect that there's going to be some memory leaks somewhere.  I'll try to fix these as they're found, but they are not a priority at the moment.
 
 =back
 
