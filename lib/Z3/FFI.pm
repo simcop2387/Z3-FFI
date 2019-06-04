@@ -251,7 +251,7 @@ my $functions = [
     die "Number of field sorts ($ct_sorts) doesn't match \$num_fields ($num_fields)" unless $ct_sorts == $num_fields;
     die "\$mk_tuple_decl needs to be passed as a scalar reference to mk_tuple_sort" unless ref($mk_tuple_decl) eq 'SCALAR';
     # set the array here to be long enough
-    @{$proj_decl} = (undef x $num_fields);
+    @{$proj_decl} = (undef() x $num_fields);
 
     my $ret = $xsub->($ctx, $mk_tuple_name, $num_fields, $field_names, $field_sorts, $mk_tuple_decl, $proj_decl);
     my $pointer = $$mk_tuple_decl;
@@ -286,7 +286,7 @@ my $functions = [
     
     return $ret;
   }],
-  [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"],
+  [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"], # TODO num_fields
   [del_constructor => ["Z3_context", "Z3_constructor"] => "void"],
   [mk_datatype => ["Z3_context", "Z3_symbol", "uint", "Z3_constructor_arr"] => "Z3_sort"],
   [mk_constructor_list => ["Z3_context", "uint", "Z3_constructor_arr"] => "Z3_constructor_list"],
@@ -390,11 +390,32 @@ my $functions = [
   [mk_bvmul_no_overflow => ["Z3_context", "Z3_ast", "Z3_ast", "bool"] => "Z3_ast"],
   [mk_bvmul_no_underflow => ["Z3_context", "Z3_ast", "Z3_ast"] => "Z3_ast"],
   [mk_select => ["Z3_context", "Z3_ast", "Z3_ast"] => "Z3_ast"],
-  [mk_select_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_ptr"] => "Z3_ast", sub {}], # TODO
+  [mk_select_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_arr"] => "Z3_ast", sub {
+    my ($xsub, $ctx, $ast, $ct, $indexes) = @_;
+    # subtract one, $indexes is going to be NULL terminated, which doesn't matter for this call
+    # so the count will be off by one from what we got passed
+    die "\$ct($ct) and \$indexes(".(@$indexes-1).") don't match" unless $ct == @$indexes-1;
+
+    $xsub->($ctx, $ast, $ct, $indexes);
+  }],
   [mk_store => ["Z3_context", "Z3_ast", "Z3_ast", "Z3_ast"] => "Z3_ast"],
-  [mk_store_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_ptr", "Z3_ast"] => "Z3_ast", sub {}], # TODO
+  [mk_store_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_arr", "Z3_ast"] => "Z3_ast", sub {
+    my ($xsub, $ctx, $ast, $ct, $indexes, $val) = @_;
+    # subtract one, $indexes is going to be NULL terminated, which doesn't matter for this call
+    # so the count will be off by one from what we got passed
+    die "\$ct($ct) and \$indexes(".(@$indexes-1).") don't match" unless $ct == @$indexes-1;
+
+    $xsub->($ctx, $ast, $ct, $indexes, $val);
+  }],
   [mk_const_array => ["Z3_context", "Z3_sort", "Z3_ast"] => "Z3_ast"],
-  [mk_map => ["Z3_context", "Z3_func_decl", "uint", "Z3_ast_ptr"] => "Z3_ast", sub {}], # TODO
+  [mk_map => ["Z3_context", "Z3_func_decl", "uint", "Z3_ast_arr"] => "Z3_ast", sub {
+    my ($xsub, $ctx, $ast, $ct, $args) = @_;
+    # subtract one, $indexes is going to be NULL terminated, which doesn't matter for this call
+    # so the count will be off by one from what we got passed
+    die "\$ct($ct) and \$args(".(@$args-1).") don't match" unless $ct == @$args-1;
+
+    $xsub->($ctx, $ast, $ct, $args);
+  }],
   [mk_array_default => ["Z3_context", "Z3_ast"] => "Z3_ast"],
   [mk_as_array => ["Z3_context", "Z3_func_decl"] => "Z3_ast"],
   [mk_set_sort => ["Z3_context", "Z3_sort"] => "Z3_sort"],
@@ -608,7 +629,19 @@ my $functions = [
   [parse_smtlib2_file => ["Z3_context", "Z3_string", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint", "Z3_symbol_arr", "Z3_func_decl_arr"] => "Z3_ast_vector"],
   [eval_smtlib2_string => ["Z3_context", "Z3_string"] => "Z3_string"],
   [get_error_code => ["Z3_context"] => "Z3_error_code"],
-#  [set_error_handler => ["Z3_context", "Z3_error_handler"] => "void"], # TODO this needs some work with function callbacks
+  [set_error_handler => ["Z3_context", "Z3_error_handler"] => "void", sub {
+    my ($xsub, $ctx, $sub) = @_;
+    die "\$sub needs to be a coderef when passed to set_error_handler" unless ref($domain) eq 'CODE';
+
+    # extra level, but so we can wrap the arguments properly
+    my $closure = $ffi->closure(sub {
+      my ($ctx_ptr, $err_ptr) = @_;
+      my $ctx = bless \$ctx_ptr, 'Z3::FFI::Types::Z3_context';
+      my $err = bless \$err_ptr, 'Z3::FFI::Types::Z3_error_code';
+      $sub->($ctx, $err);
+    });
+    $xsub->($ctx, $closure);
+  }],
   [set_error => ["Z3_context", "Z3_error_code"] => "void"],
   [get_error_msg => ["Z3_context", "Z3_error_code"] => "Z3_string"],
   [get_version => ["uint *", "uint *", "uint *", "uint *"] => "void"],
@@ -924,7 +957,7 @@ my $real_types = {
   Z3_goal_prec => 'int',
   Z3_string => 'string',
   Z3_string_ptr => 'string *',
-  # Z3_error_handler => # TODO ...
+  Z3_error_handler => '(opaque, opaque)->void',
 };
 
 for my $type (@$opaque_types) {
@@ -956,7 +989,6 @@ for my $type_name (keys %$real_types) {
 
 for my $function (@$functions) {
   my $name = shift @$function;
-#  print "Making Function $name\n";
   $ffi->attach(["Z3_$name" => $name], @$function);
 }
 
