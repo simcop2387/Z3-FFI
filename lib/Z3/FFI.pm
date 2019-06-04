@@ -889,7 +889,20 @@ my $functions = [
   [rcf_neq => ["Z3_context", "Z3_rcf_num", "Z3_rcf_num"] => "bool"],
   [rcf_num_to_string => ["Z3_context", "Z3_rcf_num", "bool", "bool"] => "Z3_string"],
   [rcf_num_to_decimal_string => ["Z3_context", "Z3_rcf_num", "uint"] => "Z3_string"],
-  [rcf_get_numerator_denominator => ["Z3_context", "Z3_rcf_num", "Z3_rcf_num_ptr", "Z3_rcf_num_ptr"] => "void", sub {}], # TODO
+  [rcf_get_numerator_denominator => ["Z3_context", "Z3_rcf_num", "Z3_rcf_num_ptr", "Z3_rcf_num_ptr"] => "void", sub {
+    my ($xsub, $ctx, $in, $num, $denom) = @_;
+    die "\$num needs to be passed as a scalar reference to rcf_get_numerator_denominator" unless ref($num) eq 'SCALAR';
+    die "\$denom needs to be passed as a scalar reference to rcf_get_numerator_denominator" unless ref($denom) eq 'SCALAR';
+
+    my $ret = $xsub->($ctx, $in, $num, $denom);
+    my $pointer = $$num;
+    my $pointer2 = $$denom;
+    # rebless the inner object into the right type for later
+    $$num = bless \$pointer, "Z3::FFI::Types::Z3_rcf_num";
+    $$denom = bless \$pointer2, "Z3::FFI::Types::Z3_rcf_num";
+    
+    return $ret;
+    }],
 ];
 
 my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
