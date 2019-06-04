@@ -232,7 +232,17 @@ my $functions = [
   [mk_bv_sort => ["Z3_context", "uint"] => "Z3_sort"],
   [mk_finite_domain_sort => ["Z3_context", "Z3_symbol", "uint64_t"] => "Z3_sort"],
   [mk_array_sort => ["Z3_context", "Z3_sort", "Z3_sort"] => "Z3_sort"],
-  [mk_array_sort_n => ["Z3_context", "uint", "Z3_sort_ptr", "Z3_sort"] => "Z3_sort", sub {}], # TODO
+  [mk_array_sort_n => ["Z3_context", "uint", "Z3_sort_ptr", "Z3_sort"] => "Z3_sort", sub {
+    my ($xsub, $ctx, $n, $domain, $range) = @_;
+    die "\$domain needs to be passed as a scalar reference to mk_array_sort_n" unless ref($domain) eq 'SCALAR';
+
+    my $ret = $xsub->($ctx, $n, $domain, $range);
+
+    # rebless the inner object into the right type for later
+    $$domain = bless $$domain, "Z3::FFI::Types::Z3_sort";
+
+    return $ret;
+  }],
   [mk_tuple_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "Z3_sort", sub {}], # TODO
   [mk_enumeration_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_func_decl_arr", "Z3_func_decl_arr"] => "Z3_sort"],
   [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort", sub {}], # TODO
