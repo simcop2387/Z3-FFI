@@ -2,7 +2,7 @@ package Z3::FFI::ArrayType;
 
 use strict;
 use warnings;
-use Carp qw/carp/;
+use Carp qw/croak/;
 
 use FFI::Platypus;
 
@@ -32,12 +32,12 @@ sub ffi_custom_type_api_1 {
 
   $config->{perl_to_native} = sub {
     my $count = scalar @{$_[0]};
-    
-    for my $i (0..$count) {
-      carp "Array element $i is type ".ref($_[0][$i])." and not type $z3_class" unless ref($_[0][$i]) eq $z3_class;
+
+    for my $i (0..$count-1) {
+      croak "Array element $i is type ".ref($_[0][$i])." and not type $z3_class" unless ref($_[0][$i]) eq $z3_class;
     }
     
-    my $pointers = pack((_numeric_type() x $count+1), (map {$$_} @{$_[0]}), 0);
+    my $pointers = pack((_numeric_type() x ($count+1)), (map {$$_} @{$_[0]}), 0);
     my $array_pointer = unpack(_numeric_type(), pack('P', $pointers));
     # Save a reference to the pointer list, and the objects themselves so they don't get GC'd
     push @stack, [ \$_[0], \$pointers ];
