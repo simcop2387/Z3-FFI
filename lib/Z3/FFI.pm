@@ -243,7 +243,23 @@ my $functions = [
 
     return $ret;
   }],
-  [mk_tuple_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "Z3_sort", sub {}], # TODO
+  [mk_tuple_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "Z3_sort", sub {
+    my ($xsub, $ctx, $mk_tuple_name, $num_fields, $field_names, $field_sorts, $mk_tuple_decl, $proj_decl) = @_;
+    my $ct_names = scalar @$field_names;
+    my $ct_sorts = scalar @$field_sorts;
+    die "Number of field names ($ct_names) doesn't match \$num_fields ($num_fields)" unless $ct_names == $num_fields;
+    die "Number of field sorts ($ct_sorts) doesn't match \$num_fields ($num_fields)" unless $ct_sorts == $num_fields;
+    die "\$mk_tuple_decl needs to be passed as a scalar reference to mk_tuple_sort" unless ref($mk_tuple_decl) eq 'SCALAR';
+    # set the array here to be long enough
+    @{$proj_decl} = (undef x $num_fields);
+
+    my $ret = $xsub->($ctx, $mk_tuple_name, $num_fields, $field_names, $field_sorts, $mk_tuple_decl, $proj_decl);
+    my $pointer = $$mk_tuple_decl;
+    # rebless the inner object into the right type for later
+    $$mk_tuple_decl = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
+
+    return $ret;
+  }],
   [mk_enumeration_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_func_decl_arr", "Z3_func_decl_arr"] => "Z3_sort"],
   [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort", sub {}], # TODO
   [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"],
