@@ -261,14 +261,30 @@ my $functions = [
     return $ret;
   }],
   [mk_enumeration_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_func_decl_arr", "Z3_func_decl_arr"] => "Z3_sort"],
-  [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort", sub {}], # TODO
+  [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort", sub {
+  }], # TODO
   [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"],
   [del_constructor => ["Z3_context", "Z3_constructor"] => "void"],
   [mk_datatype => ["Z3_context", "Z3_symbol", "uint", "Z3_constructor_arr"] => "Z3_sort"],
   [mk_constructor_list => ["Z3_context", "uint", "Z3_constructor_arr"] => "Z3_constructor_list"],
   [del_constructor_list => ["Z3_context", "Z3_constructor_list"] => "void"],
   [mk_datatypes => ["Z3_context", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_constructor_list_arr"] => "void"],
-  [query_constructor => ["Z3_context", "Z3_constructor", "uint", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "void", sub {}], # TODO
+  [query_constructor => ["Z3_context", "Z3_constructor", "uint", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "void", sub {
+    my ($xsub, $ctx, $constructor, $num_fields, $func_constructor, $func_tester, $accessors) = @_;
+    my $ct_accessors = scalar @$accessors;
+    die "Number of accessors ($ct_sorts) doesn't match \$num_fields ($num_fields)" unless $ct_accessors == $num_fields;
+    die "\$func_constructor needs to be passed as a scalar reference to query_constructor" unless ref($func_constructor) eq 'SCALAR';
+    die "\$func_tester needs to be passed as a scalar reference to query_constructor" unless ref($func_constructor) eq 'SCALAR';
+
+    my $ret = $xsub->($ctx, $constructor, $num_fields, $func_constructor, $func_tester, $accessors);
+    my $pointer = $$func_tester;
+    my $pointer2 = $$func_constructor;
+    # rebless the inner object into the right type for later
+    $$func_tester = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
+    $$func_constructor = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
+    
+    return $ret;
+  }],
   [mk_func_decl => ["Z3_context", "Z3_symbol", "uint", "Z3_sort_arr", "Z3_sort"] => "Z3_func_decl"],
   [mk_app => ["Z3_context", "Z3_func_decl", "uint", "Z3_ast_arr"] => "Z3_ast"],
   [mk_const => ["Z3_context", "Z3_symbol", "Z3_sort"] => "Z3_ast"],
