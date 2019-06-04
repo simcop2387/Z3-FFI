@@ -262,7 +262,30 @@ my $functions = [
   }],
   [mk_enumeration_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_func_decl_arr", "Z3_func_decl_arr"] => "Z3_sort"],
   [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort", sub {
-  }], # TODO
+    my ($xsub, $ctx, $name, $elem_sort, $nil_decl, $is_nil_decl, $cons_decl, $is_cons_decl, $head_decl, $tail_decl) = @_;
+    die "\$nil_decl needs to be passed as a scalar reference to mk_list_sort"     unless ref($nil_decl) eq 'SCALAR';
+    die "\$is_nil_decl needs to be passed as a scalar reference to mk_list_sort"  unless ref($is_nil_decl) eq 'SCALAR';
+    die "\$cons_decl needs to be passed as a scalar reference to mk_list_sort"    unless ref($cons_decl) eq 'SCALAR';
+    die "\$is_cons_decl needs to be passed as a scalar reference to mk_list_sort" unless ref($is_cons_decl) eq 'SCALAR';
+    die "\$head_decl needs to be passed as a scalar reference to mk_list_sort"    unless ref($head_decl) eq 'SCALAR';
+    die "\$tail_decl needs to be passed as a scalar reference to mk_list_sort"    unless ref($tail_decl) eq 'SCALAR';
+
+    my $ret = $xsub->($ctx, $name, $elem_sort, $nil_decl, $is_nil_decl, $cons_decl, $is_cons_decl, $head_decl, $tail_decl);
+    my $pointer = $$nil_decl;
+    $$nil_decl = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
+    my $pointer2 = $$is_nil_decl;
+    $$is_nil_decl = bless \$pointer2, "Z3::FFI::Types::Z3_func_decl";
+    my $pointer3 = $$cons_decl;
+    $$cons_decl = bless \$pointer3, "Z3::FFI::Types::Z3_func_decl";
+    my $pointer4 = $$is_cons_decl;
+    $$is_cons_decl = bless \$pointer4, "Z3::FFI::Types::Z3_func_decl";
+    my $pointer5 = $$head_decl;
+    $$head_decl = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
+    my $pointer6 = $$tail_decl;
+    $$tail_decl = bless \$pointer6, "Z3::FFI::Types::Z3_func_decl";
+    
+    return $ret;
+  }],
   [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"],
   [del_constructor => ["Z3_context", "Z3_constructor"] => "void"],
   [mk_datatype => ["Z3_context", "Z3_symbol", "uint", "Z3_constructor_arr"] => "Z3_sort"],
@@ -272,7 +295,7 @@ my $functions = [
   [query_constructor => ["Z3_context", "Z3_constructor", "uint", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "void", sub {
     my ($xsub, $ctx, $constructor, $num_fields, $func_constructor, $func_tester, $accessors) = @_;
     my $ct_accessors = scalar @$accessors;
-    die "Number of accessors ($ct_sorts) doesn't match \$num_fields ($num_fields)" unless $ct_accessors == $num_fields;
+    die "Number of accessors ($ct_accessors) doesn't match \$num_fields ($num_fields)" unless $ct_accessors == $num_fields;
     die "\$func_constructor needs to be passed as a scalar reference to query_constructor" unless ref($func_constructor) eq 'SCALAR';
     die "\$func_tester needs to be passed as a scalar reference to query_constructor" unless ref($func_constructor) eq 'SCALAR';
 
@@ -281,7 +304,7 @@ my $functions = [
     my $pointer2 = $$func_constructor;
     # rebless the inner object into the right type for later
     $$func_tester = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
-    $$func_constructor = bless \$pointer, "Z3::FFI::Types::Z3_func_decl";
+    $$func_constructor = bless \$pointer2, "Z3::FFI::Types::Z3_func_decl";
     
     return $ret;
   }],
