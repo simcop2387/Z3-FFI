@@ -237,9 +237,9 @@ my $functions = [
     die "\$domain needs to be passed as a scalar reference to mk_array_sort_n" unless ref($domain) eq 'SCALAR';
 
     my $ret = $xsub->($ctx, $n, $domain, $range);
-
+    my $pointer = $$domain;
     # rebless the inner object into the right type for later
-    $$domain = bless $$domain, "Z3::FFI::Types::Z3_sort";
+    $$domain = bless \$pointer, "Z3::FFI::Types::Z3_sort";
 
     return $ret;
   }],
@@ -891,9 +891,6 @@ for my $function (@$functions) {
 #  print "Making Function $name\n";
   $ffi->attach(["Z3_$name" => $name], @$function);
 }
-
-my $config = mk_config();
-my $context = mk_context($config);
 
 1;
 
