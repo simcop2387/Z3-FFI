@@ -12,6 +12,11 @@ use FFI::Platypus::API qw/arguments_get_string/;
 use File::ShareDir qw/dist_dir/;
 use Path::Tiny;
 
+my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
+my $ffi_lib = FFI::CheckLib::find_lib_or_die(lib => 'z3', libpath => $search_path);
+my $ffi = FFI::Platypus->new();
+$ffi->lib($ffi_lib);
+
 use constant {
   # Z3_bool
   Z3_TRUE => 1,
@@ -647,7 +652,7 @@ my $functions = [
   [get_error_code => ["Z3_context"] => "Z3_error_code"],
   [set_error_handler => ["Z3_context", "Z3_error_handler"] => "void", sub {
     my ($xsub, $ctx, $sub) = @_;
-    die "\$sub needs to be a coderef when passed to set_error_handler" unless ref($domain) eq 'CODE';
+    die "\$sub needs to be a coderef when passed to set_error_handler" unless ref($sub) eq 'CODE';
 
     # extra level, but so we can wrap the arguments properly
     my $closure = $ffi->closure(sub {
@@ -953,11 +958,6 @@ my $functions = [
     return $ret;
     }],
 ];
-
-my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
-my $ffi_lib = FFI::CheckLib::find_lib_or_die(lib => 'z3', libpath => $search_path);
-my $ffi = FFI::Platypus->new();
-$ffi->lib($ffi_lib);
 
 my $real_types = {
   Z3_bool => 'bool',
