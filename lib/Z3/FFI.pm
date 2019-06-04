@@ -167,13 +167,13 @@ my $functions = [
   [fixedpoint_add_cover => ["Z3_context", "Z3_fixedpoint", "int", "Z3_func_decl", "Z3_ast"] => "void"],
   [fixedpoint_get_statistics => ["Z3_context", "Z3_fixedpoint"] => "Z3_stats"],
   [fixedpoint_register_relation => ["Z3_context", "Z3_fixedpoint", "Z3_func_decl"] => "void"],
-  #[fixedpoint_set_predicate_representation => ["Z3_context", "Z3_fixedpoint", "Z3_func_decl", "uint", "Z3_symbol_arr"] => "void"],
+  [fixedpoint_set_predicate_representation => ["Z3_context", "Z3_fixedpoint", "Z3_func_decl", "uint", "Z3_symbol_arr"] => "void"],
   [fixedpoint_get_rules => ["Z3_context", "Z3_fixedpoint"] => "Z3_ast_vector"],
   [fixedpoint_get_assertions => ["Z3_context", "Z3_fixedpoint"] => "Z3_ast_vector"],
   [fixedpoint_set_params => ["Z3_context", "Z3_fixedpoint", "Z3_params"] => "void"],
   [fixedpoint_get_help => ["Z3_context", "Z3_fixedpoint"] => "Z3_string"],
   [fixedpoint_get_param_descrs => ["Z3_context", "Z3_fixedpoint"] => "Z3_param_descrs"],
-  #[fixedpoint_to_string => ["Z3_context", "Z3_fixedpoint", "uint", "Z3_ast_arr"] => "Z3_string"],
+  [fixedpoint_to_string => ["Z3_context", "Z3_fixedpoint", "uint", "Z3_ast_arr"] => "Z3_string"],
   [fixedpoint_from_string => ["Z3_context", "Z3_fixedpoint", "Z3_string"] => "Z3_ast_vector"],
   [fixedpoint_from_file => ["Z3_context", "Z3_fixedpoint", "Z3_string"] => "Z3_ast_vector"],
   [fixedpoint_push => ["Z3_context", "Z3_fixedpoint"] => "void"],
@@ -189,8 +189,8 @@ my $functions = [
   [fixedpoint_get_rule_names_along_trace => ["Z3_context", "Z3_fixedpoint"] => "Z3_symbol"],
   [fixedpoint_add_invariant => ["Z3_context", "Z3_fixedpoint", "Z3_func_decl", "Z3_ast"] => "void"],
   [fixedpoint_get_reachable => ["Z3_context", "Z3_fixedpoint", "Z3_func_decl"] => "Z3_ast"],
-  #[qe_model_project => ["Z3_context", "Z3_model", "uint", "Z3_app_arr", "Z3_ast"] => "Z3_ast"],
-  #[qe_model_project_skolem => ["Z3_context", "Z3_model", "uint", "Z3_app_arr", "Z3_ast", "Z3_ast_map"] => "Z3_ast"],
+  [qe_model_project => ["Z3_context", "Z3_model", "uint", "Z3_app_arr", "Z3_ast"] => "Z3_ast"],
+  [qe_model_project_skolem => ["Z3_context", "Z3_model", "uint", "Z3_app_arr", "Z3_ast", "Z3_ast_map"] => "Z3_ast"],
   [model_extrapolate  => ["Z3_context", "Z3_model", "Z3_ast"] => "Z3_ast"],
   [qe_lite  => ["Z3_context", "Z3_ast_vector", "Z3_ast"] => "Z3_ast"],
   [polynomial_subresultants => ["Z3_context", "Z3_ast", "Z3_ast", "Z3_ast"] => "Z3_ast_vector"],
@@ -232,17 +232,17 @@ my $functions = [
   [mk_bv_sort => ["Z3_context", "uint"] => "Z3_sort"],
   [mk_finite_domain_sort => ["Z3_context", "Z3_symbol", "uint64_t"] => "Z3_sort"],
   [mk_array_sort => ["Z3_context", "Z3_sort", "Z3_sort"] => "Z3_sort"],
-#  [mk_array_sort_n => ["Z3_context", "uint", "Z3_sort *", "Z3_sort"] => "Z3_sort"],
-#  [mk_tuple_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_func_decl *", "Z3_func_decl_arr"] => "Z3_sort"],
+  [mk_array_sort_n => ["Z3_context", "uint", "Z3_sort_ptr", "Z3_sort"] => "Z3_sort", sub {}], # TODO
+  [mk_tuple_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "Z3_sort", sub {}], # TODO
   [mk_enumeration_sort => ["Z3_context", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_func_decl_arr", "Z3_func_decl_arr"] => "Z3_sort"],
-  [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort"],
+  [mk_list_sort => ["Z3_context", "Z3_symbol", "Z3_sort", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_ptr"] => "Z3_sort", sub {}], # TODO
   [mk_constructor => ["Z3_context", "Z3_symbol", "Z3_symbol", "uint", "Z3_symbol_arr", "Z3_sort_arr", "uint[]"] => "Z3_constructor"],
   [del_constructor => ["Z3_context", "Z3_constructor"] => "void"],
   [mk_datatype => ["Z3_context", "Z3_symbol", "uint", "Z3_constructor_arr"] => "Z3_sort"],
   [mk_constructor_list => ["Z3_context", "uint", "Z3_constructor_arr"] => "Z3_constructor_list"],
   [del_constructor_list => ["Z3_context", "Z3_constructor_list"] => "void"],
   [mk_datatypes => ["Z3_context", "uint", "Z3_symbol_arr", "Z3_sort_arr", "Z3_constructor_list_arr"] => "void"],
-#  [query_constructor => ["Z3_context", "Z3_constructor", "uint", "Z3_func_decl*", "Z3_func_decl*", "Z3_func_decl_arr"] => "void"],
+  [query_constructor => ["Z3_context", "Z3_constructor", "uint", "Z3_func_decl_ptr", "Z3_func_decl_ptr", "Z3_func_decl_arr"] => "void", sub {}], # TODO
   [mk_func_decl => ["Z3_context", "Z3_symbol", "uint", "Z3_sort_arr", "Z3_sort"] => "Z3_func_decl"],
   [mk_app => ["Z3_context", "Z3_func_decl", "uint", "Z3_ast_arr"] => "Z3_ast"],
   [mk_const => ["Z3_context", "Z3_symbol", "Z3_sort"] => "Z3_ast"],
@@ -325,11 +325,11 @@ my $functions = [
   [mk_bvmul_no_overflow => ["Z3_context", "Z3_ast", "Z3_ast", "bool"] => "Z3_ast"],
   [mk_bvmul_no_underflow => ["Z3_context", "Z3_ast", "Z3_ast"] => "Z3_ast"],
   [mk_select => ["Z3_context", "Z3_ast", "Z3_ast"] => "Z3_ast"],
-  [mk_select_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_ptr"] => "Z3_ast"],
+  [mk_select_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_ptr"] => "Z3_ast", sub {}], # TODO
   [mk_store => ["Z3_context", "Z3_ast", "Z3_ast", "Z3_ast"] => "Z3_ast"],
-  [mk_store_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_ptr", "Z3_ast"] => "Z3_ast"],
+  [mk_store_n => ["Z3_context", "Z3_ast", "uint", "Z3_ast_ptr", "Z3_ast"] => "Z3_ast", sub {}], # TODO
   [mk_const_array => ["Z3_context", "Z3_sort", "Z3_ast"] => "Z3_ast"],
-  [mk_map => ["Z3_context", "Z3_func_decl", "uint", "Z3_ast_ptr"] => "Z3_ast"],
+  [mk_map => ["Z3_context", "Z3_func_decl", "uint", "Z3_ast_ptr"] => "Z3_ast", sub {}], # TODO
   [mk_array_default => ["Z3_context", "Z3_ast"] => "Z3_ast"],
   [mk_as_array => ["Z3_context", "Z3_func_decl"] => "Z3_ast"],
   [mk_set_sort => ["Z3_context", "Z3_sort"] => "Z3_sort"],
@@ -499,7 +499,7 @@ my $functions = [
   [mk_model => ["Z3_context"] => "Z3_model"],
   [model_inc_ref => ["Z3_context", "Z3_model"] => "void"],
   [model_dec_ref => ["Z3_context", "Z3_model"] => "void"],
-  [model_eval => ["Z3_context", "Z3_model", "Z3_ast", "bool", "Z3_ast_ptr"] => "Z3_bool"],
+  [model_eval => ["Z3_context", "Z3_model", "Z3_ast", "bool", "Z3_ast_ptr"] => "Z3_bool", sub {}], # TODO
   [model_get_const_interp => ["Z3_context", "Z3_model", "Z3_func_decl"] => "Z3_ast"],
   [model_has_interp => ["Z3_context", "Z3_model", "Z3_func_decl"] => "bool"],
   [model_get_func_interp => ["Z3_context", "Z3_model", "Z3_func_decl"] => "Z3_func_interp"],
@@ -824,7 +824,7 @@ my $functions = [
   [rcf_neq => ["Z3_context", "Z3_rcf_num", "Z3_rcf_num"] => "bool"],
   [rcf_num_to_string => ["Z3_context", "Z3_rcf_num", "bool", "bool"] => "Z3_string"],
   [rcf_num_to_decimal_string => ["Z3_context", "Z3_rcf_num", "uint"] => "Z3_string"],
-  [rcf_get_numerator_denominator => ["Z3_context", "Z3_rcf_num", "Z3_rcf_num_ptr", "Z3_rcf_num_ptr"] => "void"],
+  [rcf_get_numerator_denominator => ["Z3_context", "Z3_rcf_num", "Z3_rcf_num_ptr", "Z3_rcf_num_ptr"] => "void", sub {}], # TODO
 ];
 
 my $search_path = path(dist_dir('Alien-Z3'))->child('dynamic');
@@ -867,25 +867,7 @@ for my $type (@$opaque_types) {
 
   $ffi->load_custom_type("Z3::FFI::ArrayType" => $type."_arr", $type);
 
-
-#  $ffi->custom_type($type."_arr" => {
-#    native_type => 'opaque',
-#    native_to_perl => sub {
-#      ...
-#    },
-#    perl_to_native => sub {
-#      ...
-#    }
-#  });
-  $ffi->custom_type($type."_ptr" => {
-    native_type => 'opaque',
-    native_to_perl => sub {
-      ...
-    },
-    perl_to_native => sub {
-      ...
-    }
-  });
+  $ffi->type("opaque*" => $type."_ptr");
 }
   
 
