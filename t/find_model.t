@@ -102,7 +102,12 @@ y -> false
 x -> true
 EOM
 Z3::FFI::solver_dec_ref($ctx, $solver);
+Z3::FFI::del_context($ctx);
 undef $solver;
+undef $ctx;
+
+$config = Z3::FFI::mk_config();
+$ctx = Z3::FFI::mk_context($config);
 
 # Model two, finds a solution to
 # V < W + 1
@@ -138,12 +143,15 @@ v -> 3
 w -> 3
 EOM
 
-my $equal = Z3::FFI::mk_eq($ctx, $v, $w); # v == w
-check_type($equal, "Z3_ast", "Equal is correct type");
-my $not_equal = Z3::FFI::mk_not($ctx, $equal); # !(v == w)
-check_type($not_equal, "Z3_ast", "Not equal is correct type");
-
-Z3::FFI::solver_assert($ctx, $solver, $not_equal);
+#my $equal = Z3::FFI::mk_eq($ctx, $v, $w); # v == w
+#check_type($equal, "Z3_ast", "Equal is correct type");
+#my $not_equal = Z3::FFI::mk_not($ctx, $equal); # !(v == w)
+#check_type($not_equal, "Z3_ast", "Not equal is correct type");
+#
+#use Data::Dumper;
+#warn Dumper($not_equal);
+#Z3::FFI::solver_assert($ctx, $solver, $equal);
+#pass("Solver assert added new condition");
 
 check($ctx, $solver, Z3::FFI::Z3_L_TRUE(), "Equation more complex", <<"EOM");
 v -> 3
