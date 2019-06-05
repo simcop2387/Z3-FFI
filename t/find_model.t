@@ -10,6 +10,14 @@ sub check_type {
     is(ref($input), "Z3::FFI::Types::".$type, $message);
 }
 
+sub mk_solver {
+  my ($ctx) = @_;
+  my $solver = Z3::FFI::mk_solver($ctx);
+  Z3::FFI::solver_inc_ref($ctx, $solver);
+  check_type($solver, "Z3_solver", "Solver is correct type");
+  return $solver;
+}
+
 sub mk_var {
     my ($ctx, $name, $sort) = @_;
 
@@ -51,7 +59,7 @@ sub mk_int {
 
 sub check {
     my ($ctx, $solver, $exp_result, $model_name, $model_test) = @_;
-
+    
     my $result = Z3::FFI::solver_check($ctx, $solver);
     if ($result == Z3::FFI::Z3_L_FALSE()) {
         pass("Unable to satisfy model, $model_name");
@@ -93,8 +101,7 @@ check_type($y, "Z3_ast", "Variable comes back as correct type");
 
 my $x_xor_y = Z3::FFI::mk_xor($ctx, $x, $y);
 
-my $solver = Z3::FFI::mk_solver($ctx);
-check_type($solver, "Z3_solver" ,"Solver is correct type");
+my $solver = mk_solver($ctx);
 
 Z3::FFI::solver_assert($ctx, $solver, $x_xor_y);
 check($ctx, $solver, Z3::FFI::Z3_L_TRUE(), "XOR Model", <<"EOM");
@@ -132,8 +139,7 @@ my $constraint_2 = Z3::FFI::mk_gt($ctx, $v, $two);
 check_type($constraint_1, "Z3_ast", "Constraint 1 is correct type");
 check_type($constraint_2, "Z3_ast", "Constraint 2 is correct type");
 
-$solver = Z3::FFI::mk_solver($ctx);
-check_type($solver, "Z3_solver" ,"Solver is correct type");
+$solver = mk_solver($ctx);
 
 Z3::FFI::solver_assert($ctx, $solver, $constraint_1);
 Z3::FFI::solver_assert($ctx, $solver, $constraint_2);
@@ -143,19 +149,17 @@ v -> 3
 w -> 3
 EOM
 
-#my $equal = Z3::FFI::mk_eq($ctx, $v, $w); # v == w
-#check_type($equal, "Z3_ast", "Equal is correct type");
-#my $not_equal = Z3::FFI::mk_not($ctx, $equal); # !(v == w)
-#check_type($not_equal, "Z3_ast", "Not equal is correct type");
-#
-#use Data::Dumper;
-#warn Dumper($not_equal);
-#Z3::FFI::solver_assert($ctx, $solver, $equal);
-#pass("Solver assert added new condition");
+my $equal = Z3::FFI::mk_eq($ctx, $v, $w); # v == w
+check_type($equal, "Z3_ast", "Equal is correct type");
+my $not_equal = Z3::FFI::mk_not($ctx, $equal); # !(v == w)
+check_type($not_equal, "Z3_ast", "Not equal is correct type");
+
+Z3::FFI::solver_assert($ctx, $solver, $not_equal);
+pass("Solver assert added new condition");
 
 check($ctx, $solver, Z3::FFI::Z3_L_TRUE(), "Equation more complex", <<"EOM");
+w -> 4
 v -> 3
-w -> 3
 EOM
 
 # clean up the solver
