@@ -74,15 +74,8 @@ my $equal = Z3::FFI::mk_eq($ctx, $v, $w); # v == w
 check_type($equal, "Z3_ast", "Equal is correct type");
 my $not_equal = Z3::FFI::mk_not($ctx, $equal); # !(v == w)
 check_type($not_equal, "Z3_ast", "Not equal is correct type");
-<<<<<<< Updated upstream
 
 Z3::FFI::solver_assert($ctx, $solver, $not_equal);
-=======
-#
-#use Data::Dumper;
-#warn Dumper($not_equal);
-Z3::FFI::solver_assert($ctx, $solver, $equal);
->>>>>>> Stashed changes
 pass("Solver assert added new condition");
 
 check($ctx, $solver, Z3::FFI::Z3_L_TRUE(), "Equation more complex", <<"EOM");

@@ -1,5 +1,7 @@
 package t::lib::helpers;
 
+use Test::More;
+
 use Exporter qw/import/;
 
 our @EXPORT=qw/check_type mk_var mk_bool_var mk_int_var mk_int mk_solver check/;
@@ -75,7 +77,6 @@ sub check {
     
     if ($exp_result != Z3::FFI::Z3_L_FALSE()) {
         my $model = Z3::FFI::solver_get_model($ctx, $solver);
-        warn Dumper($model);
         check_type($model, "Z3_model", "Model comes back successfully");
         Z3::FFI::model_inc_ref($ctx, $model);
 
