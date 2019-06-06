@@ -2,10 +2,16 @@ package
   t::lib::helpers;
 
 use Test::More;
+use warnings;
 
-use Exporter qw/import/;
+use Exporter;
+use namespace::autoclean;
+use Package::Stash;
 
-our @EXPORT=qw/check_type mk_var mk_bool_var mk_int_var mk_int mk_solver check/;
+sub import {
+    our @EXPORT=Package::Stash->new(__PACKAGE__)->list_all_symbols('CODE');
+    goto \&Exporter::import;
+}
 
 sub check_type {
     my ($input, $type, $message) = @_;
@@ -88,6 +94,5 @@ sub check {
         pass("No model to attempt to display");
     }
 }
-
 
 1;
