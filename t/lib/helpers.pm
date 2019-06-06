@@ -258,7 +258,13 @@ sub assert_injective_axium {
 
     my $pattern_string = Z3::FFI::pattern_to_string($ctx, $pattern);
     is($pattern_string, $pattern_test, "Pattern matches expected layout");
-    
+
+    my $q = Z3::FFI::mk_forall($ctx, 0, 1, \$pattern, $sz, \@types, \@names, $equal);
+    check_type($q, "Z3_ast", "Quantifier comes back correctly");
+
+    my $q_str = Z3::FFI::ast_to_string($ctx, $q);
+    is($q_str, "WHAT", "Quantifier is correct value");
+    Z3::FFI::solver_assert($ctx, $solver, $q);
 }
 
 1;
