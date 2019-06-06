@@ -1,5 +1,6 @@
 extern
 .vstags
+.vscode
 .build
 *.swp
 *.kate-swp
