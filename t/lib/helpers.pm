@@ -210,4 +210,55 @@ sub prove {
     Z3::FFI::solver_pop($ctx, $solver, 1);
 }
 
+sub assert_injective_axium {
+    my ($ctx, $solver, $func, $i, $name, $pattern_test) = @_;
+
+    my $sz = Z3::FFI::get_domain_size($ctx, $func);
+    if ($i > $sz) {
+        fail("Failed to create inj axiom");
+        exit(1);
+    }
+
+    my $finv_domain = Z3::FFI::get_range($ctx, $func);
+    my $finv_range  = Z3::FFI::get_domain($ctx, $func, $i);
+    check_type($finv_domain, "Z3_sort", "F-inv domain is correct type");
+    check_type($finv_range, "Z3_sort", "F-inv range is correct type");
+
+    my $finv = Z3::FFI::mk_fresh_func_decl($ctx, "inv", 1, \$finv_domain, $finv_range);
+    check_type($finv, "Z3_func_decl", "Inverse function is correct");
+
+    my (@types, @names, @xs);
+
+    for my $j (0..$sz) {
+        my $type = Z3::FFI::get_domain($ctx, $func, $j);
+        check_type($type, "Z3_sort", "Type was correct type");
+        my $name = Z3::FFI::mk_int_symbol($ctx, $j);
+        check_type($name, "Z3_symbol", "Name is correct type")
+        my $xs   = Z3::FFI::mk_bound($ctx, $j, $type);
+        check_type($xs, "Z3_ast", "XS was correct type");
+
+        push @types, $type;
+        push @names, $name;
+        push @xs, $xs;
+    }
+
+    my $x_i = $xs[$i];
+
+    my $fxs = Z3::FFI::mk_app($ctx, $func, $sz, \$xs);
+    check_type($fxs, "Z3_ast", "fxs is correct type");
+
+    my $finv_fxs = mk_unary_app($ctx, $finv, $fxs);
+    check_type($finv_fxs, "Z3_ast", "finv_fxs is correct type");
+
+    my $equal = Z3::FFI::mk_eq($ctx, $finv_fxs, $x_i);
+    check_type($equal, "Z3_ast", "equal is correct type");
+
+    my $pattern = Z3::FFI::mk_pattern($ctx, 1, \$fxs);
+    check_type($pattern, "Z3_pattern", "pattern is correct type");
+
+    my $pattern_string = Z3::FFI::pattern_to_string($ctx, $pattern);
+    is($pattern_string, $pattern_test, "Pattern matches expected layout");
+    
+}
+
 1;
