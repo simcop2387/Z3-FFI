@@ -271,7 +271,7 @@ sub assert_injective_axium {
 }
 
 sub assert_comm_axiom {
-    my ($ctx, $solver, $f) = @_;
+    my ($ctx, $solver, $f, $axiom_value) = @_;
 
     my $t = Z3::FFI::get_range($ctx, $f);
     check_type($t, "Z3_sort", "Function range correct type");
@@ -295,7 +295,20 @@ sub assert_comm_axiom {
     check_type($f_name, "Z3_symbol", "function name is correct type");
     check_type($t_name, "Z3_symbol", "Type name is correct type");
 
-    die "fuck";
+    my $q = Z3::FFI::parse_smtlib2_string($ctx, "(assert (forall ((x T) (y T)) (= f x y) (f y x))))",
+                                          1, \$t_name, \$t,
+                                          1, \$f_name, \$f);
+
+    check_type($q, "Z3_ast_vector", "Q type is correct");
+    my $axiom_string = Z3::FFI::ast_vector_to_string($ctx, $q);
+    is($axiom_string, $axiom_value, "Axiom is expected value");
+
+    my $vector_size = Z3::FFI::ast_vector_size($ctx, $q);
+    for (my $i = 0; $i < $vector_size; $i++) {
+        Z3::FFI::solver_assert($ctx, $solver, Z3::FFI::ast_vector_get($ctx, $q, $i));
+    }
+
+    return;
 }
 
 1;
