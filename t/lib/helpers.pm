@@ -188,8 +188,12 @@ sub prove {
     my $result = Z3::FFI::solver_check($ctx, $solver);
 
     if ($result == Z3::FFI::Z3_L_FALSE()) {
-        fail("F was proven.");
-        die "Proved the wrong thing, bailing";
+        if (!$is_valid) {
+            fail("F was proven.");
+            die "Proved the wrong thing, bailing";
+        } else {
+            pass("F was not proven");
+        }
     } elsif ($result == Z3::FFI::Z3_L_UNDEF()) {
         pass("Failed to disprove or prove F");
         my $model = Z3::FFI::solver_get_model($ctx, $solver);
