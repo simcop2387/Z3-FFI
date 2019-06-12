@@ -1,4 +1,7 @@
 package t::lib::helpers;
+use warnings;
+use strict;
+
 
 use Test::More;
 use warnings;
@@ -34,7 +37,7 @@ sub mk_context_custom {
     Z3::FFI::set_param_value($cfg, "model", "true");
     my $ctx = Z3::FFI::mk_context($cfg);
     check_type($ctx, "Z3_context", "mk_context_custom creates context");
-    Z3::FFI::set_error_handler($ctx, $err);
+    Z3::FFI::set_error_handler($ctx, $err_handle);
 
     return $ctx;
 }
@@ -126,7 +129,7 @@ sub mk_real_var {
 sub mk_unary_app {
     my ($ctx, $func, $x) = @_;
 
-    my $app = Z3::FFI::mk_app($ctx, $f, 1, [$x]);
+    my $app = Z3::FFI::mk_app($ctx, $func, 1, [$x]);
     check_type($app, "Z3_ast", "Function application works");
     return $app;
 }
@@ -135,7 +138,7 @@ sub mk_unary_app {
 sub mk_binary_app {
     my ($ctx, $func, $x, $y) = @_;
 
-    my $app = Z3::FFI::mk_app($ctx, $f, 2, [$x, $y]);
+    my $app = Z3::FFI::mk_app($ctx, $func, 2, [$x, $y]);
     check_type($app, "Z3_ast", "Function binary application works");
     return $app;
 }
@@ -177,7 +180,7 @@ sub prove {
     Z3::FFI::solver_push($ctx, $solver);
     pass("Able to save context with a push");
 
-    my $not_f = Z3::FFI::mk_not($ctx, $form);
+    my $not_f = Z3::FFI::mk_not($ctx, $formula);
     check_type($not_f, "Z3_ast", "Negation of formula made");
 
     Z3::FFI::solver_assert($ctx, $solver, $not_f); # assert not f
@@ -192,16 +195,16 @@ sub prove {
         my $model = Z3::FFI::solver_get_model($ctx, $solver);
         check_type($model, "Z3_model", "Produced model from solver");
         Z3::FFI::model_inc_ref($ctx, $model);
-        my $model_string = Z3::FFI::model_to_string($ctx, $m);
-        is($model_strig, $model_test, "$model_name potential proof");
+        my $model_string = Z3::FFI::model_to_string($ctx, $model);
+        is($model_string, $model_test, "$model_name potential proof");
         Z3::FFI::model_dec_ref($ctx, $model);
-    } elsif ($result == Z3::FFI::Z3_L_TRUE) {
+    } elsif ($result == Z3::FFI::Z3_L_TRUE()) {
         pass("Failed to disprove or prove F");
         my $model = Z3::FFI::solver_get_model($ctx, $solver);
         check_type($model, "Z3_model", "Produced model from solver");
         Z3::FFI::model_inc_ref($ctx, $model);
-        my $model_string = Z3::FFI::model_to_string($ctx, $m);
-        is($model_strig, $model_test, "$model_name proof");
+        my $model_string = Z3::FFI::model_to_string($ctx, $model);
+        is($model_string, $model_test, "$model_name proof");
         Z3::FFI::model_dec_ref($ctx, $model);
     } else {
         fail("Got unknown result $result for solver check");
@@ -233,7 +236,7 @@ sub assert_injective_axium {
         my $type = Z3::FFI::get_domain($ctx, $func, $j);
         check_type($type, "Z3_sort", "Type was correct type");
         my $name = Z3::FFI::mk_int_symbol($ctx, $j);
-        check_type($name, "Z3_symbol", "Name is correct type")
+        check_type($name, "Z3_symbol", "Name is correct type");
         my $xs   = Z3::FFI::mk_bound($ctx, $j, $type);
         check_type($xs, "Z3_ast", "XS was correct type");
 
@@ -244,7 +247,7 @@ sub assert_injective_axium {
 
     my $x_i = $xs[$i];
 
-    my $fxs = Z3::FFI::mk_app($ctx, $func, $sz, \$xs);
+    my $fxs = Z3::FFI::mk_app($ctx, $func, $sz, \@xs);
     check_type($fxs, "Z3_ast", "fxs is correct type");
 
     my $finv_fxs = mk_unary_app($ctx, $finv, $fxs);
@@ -265,6 +268,34 @@ sub assert_injective_axium {
     my $q_str = Z3::FFI::ast_to_string($ctx, $q);
     is($q_str, "WHAT", "Quantifier is correct value");
     Z3::FFI::solver_assert($ctx, $solver, $q);
+}
+
+sub assert_comm_axiom {
+    my ($ctx, $solver, $f) = @_;
+
+    my $t = Z3::FFI::get_range($ctx, $f);
+    check_type($t, "Z3_sort", "Function range correct type");
+
+    my $d_size = Z3::FFI::get_domain_size($ctx, $f);
+    my $d1 = Z3::FFI::get_domain($ctx, $f, 0);
+    my $d2 = Z3::FFI::get_domain($ctx, $f, 1);
+
+    check_type($d1, "Z3_sort", "Domain 1 is correct type");
+    check_type($d2, "Z3_sort", "Domain 2 is correct type");
+
+    # I'm not 100% that I'm doing this check with $$d1, $$d2, and $$t correctly
+    if ($d_size != 2 || $$d1 != $$t || $$d2 != $$t) {
+        fail("Function must be binary and argument types must be equal to return types");
+        die "Failed function input in test";
+    }
+
+    my $f_name = Z3::FFI::mk_string_symbol($ctx, "f");
+    my $t_name = Z3::FFI::mk_string_symbol($ctx, "T");
+
+    check_type($f_name, "Z3_symbol", "function name is correct type");
+    check_type($t_name, "Z3_symbol", "Type name is correct type");
+
+    die "fuck";
 }
 
 1;
